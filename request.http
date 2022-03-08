@@ -1,0 +1,71 @@
+###
+POST http://localhost:9000/api/characters HTTP/1.1
+Content-Type: application/json
+
+{
+    "nombre":"brunaaogfdgdfdoo",
+    "edad":7,
+    "peso":11,
+    "historia":"asda",
+    "imagen":"./unaimagen.png"
+}
+
+###
+GET http://localhost:9000/api/characters HTTP/1.1
+Content-Type: application/json
+
+###
+GET http://localhost:9000/api/characters?name=brunaaodoo HTTP/1.1
+Content-Type: application/json
+
+###
+GET http://localhost:9000/api/characters?age=4 HTTP/1.1
+Content-Type: application/json
+
+###
+GET http://localhost:9000/api/characters?weight=11 HTTP/1.1
+Content-Type: application/json
+
+###
+GET http://localhost:9000/api/characters?movies=titulo+pelicula HTTP/1.1
+Content-Type: application/json
+
+###
+DELETE http://localhost:9000/api/characters?id=620444aa9058148b4e11ee2a HTTP/1.1
+Content-Type: application/json
+
+###
+DELETE http://localhost:9000/api/characters?name=nombre1 HTTP/1.1
+Content-Type: application/json
+
+###
+PUT http://localhost:9000/api/characters?id=620444479058148b4e11ee20 HTTP/1.1
+Content-Type: application/json
+
+{
+    "nombre":"b",
+    "edad":9,
+    "peso":14,
+    "historia":"asdddda",
+    "imagen":"./unaiaamagen.png"
+}
+
+###
+POST http://localhost:9000/api/serie HTTP/1.1
+Content-Type: application/json
+
+{
+    "titulo":"unaseriev",
+    "calificacion":6,
+    "imagen":"./unaimagen.png",
+    "fecha_creacion":"03/02/21"
+}
+
+###
+POST  http://localhost:9000/auth/login
+Content-Type: application/json
+
+{
+    "correo":"invitado@mail.com",
+    "contraseña":"invitado"
+}
