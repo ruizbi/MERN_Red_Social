@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const mongodb_uri = `mongodb+srv://${process.env.USER_DB}:${process.env.PASSWORD_DB}@dbprueba.dogc2.mongodb.net/api_disney_alkemy?retryWrites=true&w=majority`;
+const mongodb_uri = `mongodb+srv://${process.env.USER_DB}:${process.env.PASSWORD_DB}@dbprueba.dogc2.mongodb.net/mern_red_social?retryWrites=true&w=majority`;
 
 const dbConnection = async () => {
     await mongoose.connect( mongodb_uri)

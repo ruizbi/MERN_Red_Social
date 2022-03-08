@@ -5,9 +5,22 @@ const UsuarioSchema = Schema({
         type: String,
         required: [true, 'El nombre es obligatorio']
     },
-    correo: {
+    apellido: {
+        type: String,
+        required: [true, 'El apellido es obligatorio']
+    },
+    cuentaPrivada: {
+        type: Boolean,
+        default: false
+    },
+    email: {
         type: String,
         required: [true, 'El correo es obligatorio'],
+        unique: true
+    },
+    alias: {
+        type: String,
+        required: [true, 'El alias es obligatorio'],
         unique: true
     },
     contraseña: {
@@ -17,6 +30,14 @@ const UsuarioSchema = Schema({
     activo: {
         type: Boolean,
         default: true
+    },
+    seguidores: {
+        type: Array,
+        default: []
+    },
+    seguidos: {
+        type: Array,
+        default: []
     }
 });
 
