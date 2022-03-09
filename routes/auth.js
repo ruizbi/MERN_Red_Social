@@ -15,7 +15,7 @@ router.post('/signin', [
 
 router.get('/login', [
     check('identificacion', 'El mail es obligatorio').notEmpty(),
-    check('contraseña', 'La contraseña es obligatoria').notEmpty(),
+    check('contraseña', 'La contraseña es obligatoria').isLength({min:6}).notEmpty(),
     validarCampos,
     validarUsuario]);
 
