@@ -58,13 +58,13 @@ const desactivarUsuario = async (req = request, res = response) => {
 };
 
 const followUser = async (req = request, res = response) => {
-    const {usuario} = req;
-    const {identificacion} = req.body;
+    const {usuario, user_friend} = req;
 
-    let user_friend = await UsuarioSchema.findOne({$or:[{email:identificacion},{alias:identificacion}]});
-    
-    if(!user_friend || !user_friend.activo)
-        return res.status(404).send({data:{}, msg:'El email/alias es incorrecto'});
+    // const {usuario} = req;
+    // const {identificacion} = req.body;
+    // let user_friend = await UsuarioSchema.findOne({$or:[{email:identificacion},{alias:identificacion}]});
+    // if(!user_friend || !user_friend.activo)
+    //     return res.status(404).send({data:{}, msg:'El email/alias es incorrecto'});
 
     if(usuario.seguidos.includes(user_friend._id))
         return res.status(400).send({data:{}, msg:'El usuario ya está en la lista de seguidos'});
@@ -76,13 +76,13 @@ const followUser = async (req = request, res = response) => {
 };
 
 const unfollowUser = async (req = request, res = response) => {
-    const {usuario} = req;
-    const {identificacion} = req.body;
+    const {usuario, user_friend} = req;
 
-    let user_friend = await UsuarioSchema.findOne({$or:[{email:identificacion},{alias:identificacion}]});
-
-    if(!user_friend || !user_friend.activo)
-        return res.status(404).send({data:{}, msg:'El email/alias es incorrecto'});
+    // const {usuario} = req;
+    // const {identificacion} = req.body;
+    // let user_friend = await UsuarioSchema.findOne({$or:[{email:identificacion},{alias:identificacion}]});
+    // if(!user_friend || !user_friend.activo)
+    //     return res.status(404).send({data:{}, msg:'El email/alias es incorrecto'});
     
     if(!(usuario.seguidos.includes(user_friend._id)))
         return res.status(400).send({data:{}, msg:'El usuario no está en la lista de seguidos'});
@@ -94,15 +94,15 @@ const unfollowUser = async (req = request, res = response) => {
 };
 
 const cargarUsuario = async (req = request, res = response) => {
-    let {usuario} = req;
-    let {alias_param} = req.params;
+    let {search_user} = req;
 
-    let search_user = await UsuarioSchema.findOne({alias:alias_param});
-    if(!search_user)
-        return res.status(404).send({data:{}, msg:'El alias es incorrecto'});
-    
-    if(search_user.cuentaPrivada && !search_user.seguidos.includes(usuario._id))
-        return res.status(400).send({data:{}, msg:'El alias es privado'});
+    // let {usuario} = req;
+    // let {alias_param} = req.params;
+    // let search_user = await UsuarioSchema.findOne({alias:alias_param});
+    // if(!search_user)
+    //     return res.status(404).send({data:{}, msg:'El alias es incorrecto'});
+    // if(search_user.cuentaPrivada && !search_user.seguidos.includes(usuario._id))
+    //     return res.status(400).send({data:{}, msg:'El alias es privado'});
 
     let {nombre, apellido, alias, imagenPerfil} = search_user;
     let count_seguidos = search_user.seguidos.length;
@@ -110,21 +110,22 @@ const cargarUsuario = async (req = request, res = response) => {
 
     const publicaciones = await PublicacionSchema.find({uid:search_user._id});
 
-    let publicaciones_resumidas = publicaciones.map(pub => ({imagen:pub.imagen, descripcion:pub.descripcion, count_likes:pub.likes.length, count_comentarios:pub.comentarios.length, fecha:pub.fecha, pid:pub._id}));
+    let publicaciones_resumidas = publicaciones.map(pub => ({imagen:pub.imagen, descripcion:pub.descripcion, count_likes:pub.likes.length, count_comentarios:pub.comentarios.length, fecha:pub.fecha, pid:pub._id})); // ASÍ TENGO QUE MOSTRAR EL INICIO
 
     res.status(200).send({msg:'Se ingresa al inicio del alias solicitado', data:{usuario:{nombre, apellido, alias, imagenPerfil, count_seguidos, count_seguidores}, publicaciones:publicaciones_resumidas}});
 };
 
 const cargarContactos = async (req = request, res = response) => {
-    let {usuario} = req;
-    let {alias_param, type_f} = req.params;
+    let {search_user} = req;
+    let {type_f} = req.params;
 
-    let search_user = await UsuarioSchema.findOne({alias:alias_param});
-    if(!search_user)
-        return res.status(404).send({data:{}, msg:'El alias es incorrecto'}); 
-        
-    if(search_user.cuentaPrivada && !search_user.seguidos.includes(usuario._id))
-        return res.status(400).send({data:{}, msg:'El alias es privado'});
+    // let {usuario} = req;
+    // let {alias_param, type_f} = req.params;
+    // let search_user = await UsuarioSchema.findOne({alias:alias_param});
+    // if(!search_user)
+    //     return res.status(404).send({data:{}, msg:'El alias es incorrecto'}); 
+    // if(search_user.cuentaPrivada && !search_user.seguidos.includes(usuario._id))
+    //     return res.status(400).send({data:{}, msg:'El alias es privado'});
 
     if(type_f === "seguidos") {
         const resumen_seguidos = await Promise.all(search_user.seguidos.map(async function(_id) {
