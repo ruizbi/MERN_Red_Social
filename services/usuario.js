@@ -3,7 +3,6 @@ const UsuarioSchema = require('../models/Usuario');
 const PublicacionSchema = require('../models/Publicacion');
 const bcryptjs = require('bcryptjs');
 const generarJWT = require('../helpers/generarJWT');
-const UsuarioSchema = require('../models/Usuario');
 
 const crearUsuario = async (req = request, res = response) => {
     const {nombre, apellido, email, contraseña, alias} = req.body;
@@ -158,12 +157,12 @@ const cambiarEstadoPrivacidad = (req = request, res = response) => {
 const cargarInicio = async (req = request, res = response) => {
     const {usuario} = req;
     const lista_publicaciones = await Promise.all(usuario.seguidos.map(async function(_id){
-        let publicaciones = await PublicacionSchema.find({uid:_id});
-        let publicaciones_resumidas = publicaciones.map(({imagen, descripcion, likes, comentarios, fecha, pid}) => ({imagen, descripcion, fecha, pid, count_likes:likes.length, count_comentarios:comentarios.length}));
         let {nombre, apellido, alias, imagenPerfil} = await UsuarioSchema.findById({_id});
-        return {publicaciones:publicaciones_resumidas, usuario:{nombre, apellido, alias, imagenPerfil}};
+        let publicaciones = await PublicacionSchema.find({uid:_id});
+        let publicaciones_resumidas = publicaciones.map(({imagen, descripcion, likes, comentarios, fecha, pid}) => ({usuario:{nombre, apellido, alias, imagenPerfil}, publicacion:{imagen, descripcion, fecha, pid, count_likes:likes.length, count_comentarios:comentarios.length}}));
+        return {publicaciones:publicaciones_resumidas};
     }));
-    res.status(200).send({data:lista_publicaciones, msg:'Inicio cargado con éxito'});
+    res.status(200).send({data:{lista_publicaciones, usuario}, msg:'Inicio cargado con éxito'});
 }
 
 module.exports = {
