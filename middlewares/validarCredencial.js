@@ -1,5 +1,7 @@
 const { request, response } = require("express");
 const bcryptjs = require('bcryptjs');
+const UsuarioSchema = require("../models/Usuario");
+
 
 const validarCredencial = async (req = request, res = response, next) => {
     let usuario = await UsuarioSchema.findOne({$or:[{email:identificacion},{alias:identificacion}]})
@@ -24,7 +26,7 @@ const validarIdentificador = async (req = request, res = response, next) => {
     next();
 };
 
-const validarDisponibilidad = (req = request, res = response, next) => {
+const validarDisponibilidad = async (req = request, res = response, next) => {
     let {usuario} = req;
     let {alias_param} = req.params;
 
