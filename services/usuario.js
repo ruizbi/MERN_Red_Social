@@ -109,7 +109,7 @@ const cargarUsuario = async (req = request, res = response) => {
 
     const publicaciones = await PublicacionSchema.find({uid:search_user._id});
 
-    let publicaciones_resumidas = publicaciones.map(pub => ({imagen:pub.imagen, descripcion:pub.descripcion, count_likes:pub.likes.length, count_comentarios:pub.comentarios.length, fecha:pub.fecha, pid:pub._id})); // ASÍ TENGO QUE MOSTRAR EL INICIO
+    let publicaciones_resumidas = publicaciones.map(({imagen, descripcion, likes, comentarios, fecha, pid}) => ({imagen, descripcion, fecha, pid, count_likes:likes.length, count_comentarios:comentarios.length}));
 
     res.status(200).send({msg:'Se ingresa al inicio del alias solicitado', data:{usuario:{nombre, apellido, alias, imagenPerfil, count_seguidos, count_seguidores}, publicaciones:publicaciones_resumidas}});
 };
@@ -153,7 +153,6 @@ const cambiarEstadoPrivacidad = (req = request, res = response) => {
         .catch(error => res.status(500).send({msg:'No se pudo cambiar el estado de privacidad', data:error}));
 };
 
-// TENGO QUE CAMBIAR LA SALIDA
 const cargarInicio = async (req = request, res = response) => {
     const {usuario} = req;
     const lista_publicaciones = await Promise.all(usuario.seguidos.map(async function(_id){
@@ -162,7 +161,7 @@ const cargarInicio = async (req = request, res = response) => {
         let publicaciones_resumidas = publicaciones.map(({imagen, descripcion, likes, comentarios, fecha, pid}) => ({usuario:{nombre, apellido, alias, imagenPerfil}, publicacion:{imagen, descripcion, fecha, pid, count_likes:likes.length, count_comentarios:comentarios.length}}));
         return {publicaciones:publicaciones_resumidas};
     }));
-    res.status(200).send({data:{lista_publicaciones, usuario}, msg:'Inicio cargado con éxito'});
+    res.status(200).send({data:{publicaciones:lista_publicaciones, usuario:{nombre, apellido, alias, imagenPerfil}}, msg:'Inicio cargado con éxito'});
 }
 
 module.exports = {
