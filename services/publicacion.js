@@ -1,6 +1,7 @@
-const PublicacionSchema = require('../models/Publicacion');
 const { request, response } = require('express');
+const PublicacionSchema = require('../models/Publicacion');
 const ComentarioSchema = require('../models/Comentario');
+const UsuarioSchema = require('../models/Usuario');
 
 const crearPublicacion = (req = request, res = response) => {
     const {usuario} = req;
@@ -13,14 +14,16 @@ const crearPublicacion = (req = request, res = response) => {
 };
 
 const borrarPublicacion = async (req = request, res = response) => {
-    const {usuario} = req;
-    const {pid} = req.body;
+    const {publicacion} = req;
 
-    let publicacion = await PublicacionSchema.findById({_id:pid});
-    if(!publicacion)
-        return res.status(404).send({msg:'La publicación no existe'});
-    if(usuario._id != publicacion.uid)
-        return res.status(400).send({msg:'Error al querer borrar publicacion'});
+    // const {usuario} = req;
+    // const {pid} = req.body;
+    // let publicacion = await PublicacionSchema.findById({_id:pid});
+    // if(!publicacion)
+    //     return res.status(404).send({msg:'La publicación no existe'});
+
+    // if(usuario._id != publicacion.uid)
+    //     return res.status(400).send({msg:'Error al querer borrar publicacion'});
 
     const comentarios = publicacion.comentarios;
 
@@ -29,20 +32,23 @@ const borrarPublicacion = async (req = request, res = response) => {
     }));
 
     PublicacionSchema
-        .deleteOne({pid})
+        .deleteOne({pid:publicacion.pid})
         .then((data) => res.status(200).send({msg:'Publicacion borrada con éxito', data}))
         .catch((error) => res.status(400).send({msg:'Error al querer borrar publicacion', data:error}));
 };
 
 const modificarPublicacion = async (req = request, res = response) => {
-    const {usuario} = req;
-    const {pid, imagen, descripcion} = req.body;
+    const {publicacion} = req;
+    const {imagen, descripcion} = req.body;
 
-    let publicacion = await PublicacionSchema.findById({_id:pid});
-    if(!publicacion)
-        return res.status(404).send({msg:'La publicación no existe'});
-    if(usuario._id != publicacion.uid)
-        return res.status(400).send({msg:'Error al querer modificar publicacion'});
+    // const {usuario} = req;
+    // const {pid, imagen, descripcion} = req.body;
+    // let publicacion = await PublicacionSchema.findById({_id:pid});
+    // if(!publicacion)
+    //     return res.status(404).send({msg:'La publicación no existe'});
+
+    // if(usuario._id != publicacion.uid)
+    //     return res.status(400).send({msg:'Error al querer modificar publicacion'});
 
     PublicacionSchema
         .updateOne(publicacion, {imagen, descripcion})
@@ -51,12 +57,20 @@ const modificarPublicacion = async (req = request, res = response) => {
 };
 
 const changeLike = async (req = request, res = response) => {
-    const {usuario} = req;
-    const {pid} = req.body;
+    const {usuario, publicacion} = req;
 
-    let publicacion = await PublicacionSchema.findById({_id:pid});
-    if(!publicacion)
-        return res.status(404).send({msg:'La publicación no existe'});
+    // const {usuario} = req;
+    // const {pid} = req.body;
+    // let publicacion = await PublicacionSchema.findById({_id:pid});
+    // if(!publicacion)
+    //     return res.status(404).send({msg:'La publicación no existe'});
+
+    const usuario_publicacion = await UsuarioSchema.findOne({_id:publicacion.uid});
+    if(!usuario_publicacion.activo || !usuario_publicacion) 
+        return res.status(401).send({msg:'La publicacion no se encuentra disponible - USER'});
+
+    if(usuario_publicacion.cuentaPrivada && !(usuario_publicacion.seguidores.includes(usuario._id)))
+        return res.status(401).send({msg:'La publicacion no se encuentra disponible - PRIVACIDAD'});
 
     if(publicacion.likes.includes(usuario._id)) {
         await publicacion.updateOne({$pull:{likes:usuario._id}});
@@ -65,23 +79,33 @@ const changeLike = async (req = request, res = response) => {
 
     await publicacion.updateOne({$push:{likes:usuario._id}});
     res.status(200).send({msg:'Se suma el like a la publicacion', data:publicacion});
-
 };
 
-// TODO: BUSCAR PUBLICACION COMPLETA
 const buscarPublicacion = async (req = request, res = response) => {
+    const {usuario} = req;
     const {pid} = req.params;
-    
+
     let publicacion = await PublicacionSchema.findById({_id:pid});
     if(!publicacion)
         return res.status(404).send({msg:'La publicación no existe'});
-    let count_like = publicacion.likes.length;
+
+    const usuario_publicacion = await UsuarioSchema.findOne({_id:publicacion.uid});
+    if(!usuario_publicacion.activo || !usuario_publicacion) 
+        return res.status(401).send({msg:'La publicacion no se encuentra disponible - USER'});
+    
+    if(usuario_publicacion.cuentaPrivada && !(usuario_publicacion.seguidores.includes(usuario._id)))
+        return res.status(401).send({msg:'La publicacion no se encuentra disponible - PRIVACIDAD'});   
+
+    let count_likes = publicacion.likes.length;
     let comentarios = publicacion.comentarios;
-    let lista_comentarios = await Promise.all(comentarios.map(async function(comentario){
-        let commnt = await ComentarioSchema.findOne({_id:comentario._id});
-        return commnt;
+
+    let lista_comentarios = await Promise.all(comentarios.map(async function(comentario_id){
+        let {uid, message, fecha, likes} = await ComentarioSchema.findOne({_id:comentario_id});
+        let {nombre, apellido, alias, imagenPerfil} = await UsuarioSchema.findOne({_id:uid});
+        return {usuario:{nombre, apellido, alias, imagenPerfil},comentario:{message, fecha, likes}};
     }));
-    res.status(200).send({msg:'La busqueda fue exitosa', data:{publicacion, comentarios:lista_comentarios, count_like}});
+
+    res.status(200).send({msg:'La busqueda fue exitosa', data:{usuario:usuario_publicacion, publicacion:{imagen:publicacion.imagen, descripcion:publicacion.descripcion, fecha:publicacion.fecha, pid:publicacion.pid, count_likes, comentarios:lista_comentarios}}});
 }
 
 module.exports = {

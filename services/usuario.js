@@ -162,7 +162,7 @@ const cargarInicio = async (req = request, res = response) => {
         return {publicaciones:publicaciones_resumidas};
     }));
     res.status(200).send({data:{publicaciones:lista_publicaciones, usuario:{nombre, apellido, alias, imagenPerfil}}, msg:'Inicio cargado con éxito'});
-}
+};
 
 module.exports = {
     crearUsuario,
