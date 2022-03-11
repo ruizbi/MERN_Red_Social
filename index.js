@@ -3,14 +3,17 @@ const express = require('express');
 const app = express();
 const dbConnection = require('./database/config');
 const puertoEscucha = process.env.PUERTO_ESCUCHA || 9001;
-const usuarioRoute = require('./services/usuario');
-const publicacionRoute = require('./services/publicacion');
-const comentarioRoute = require('./services/comentario');
-
+const usuarioRoute = require('./routes/usuario');
+const publicacionRoute = require('./routes/publicacion');
+const comentarioRoute = require('./routes/comentario');
+const authRoute = require('./routes/auth');
 
 app.use(express.json());
 
-app.use('',)
+app.use('/usuario', usuarioRoute);
+app.use('/p', publicacionRoute);
+app.use('/comentario', comentarioRoute);
+app.use('/auth', authRoute);
 
 dbConnection();
 
