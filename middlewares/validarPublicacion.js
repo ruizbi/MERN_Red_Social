@@ -1,9 +1,9 @@
 const {request, response} = require('express');
 const PublicacionSchema = require('../models/Publicacion');
 
-const validarExistenciaPublicacion = (req = request, res = response, next) => {
+const validarExistenciaPublicacion = async (req = request, res = response, next) => {
     const {pid} = req.body;
-    let publicacion = await PublicacionSchema.findById({_id:pid});
+    let publicacion = await PublicacionSchema.findOne({_id:pid});
     if(!publicacion)
         return res.status(404).send({msg:'La publicación no existe'});
     req.publicacion = publicacion;
