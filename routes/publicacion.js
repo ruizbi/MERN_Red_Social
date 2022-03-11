@@ -8,13 +8,13 @@ const router = express.Router();
 
 router.post('/crear_publicacion', [
     check('imagen', 'El path de la imagen es obligatorio').notEmpty(),
-    check('descripcion', 'La descripcion es obligatoria').notEmpty(),
+    check('descripcion', 'La descripcion es obligatoria').isString().notEmpty(),
     validarCampos,
     validarJWT,
     crearPublicacion]);
 
 router.delete('/borrar_publicacion', [
-    check('pid', 'El ID de la publicacion es obligatorio').notEmpty(),
+    check('pid', 'El ID de la publicacion es obligatorio').isString().notEmpty(),
     validarCampos,
     validarExistenciaPublicacion,
     validarJWT,
@@ -22,9 +22,9 @@ router.delete('/borrar_publicacion', [
     borrarPublicacion]);
 
 router.put('/modificar_publicacion', [
-    check('pid', 'El ID de la publicacion es obligatorio').notEmpty(),
-    check('imagen', 'El path de la imagen es obligatorio').notEmpty(),
-    check('descripcion', 'La descripcion es obligatoria').notEmpty(),
+    check('pid', 'El ID de la publicacion es obligatorio').isString().notEmpty(),
+    check('imagen', 'El path de la imagen es obligatorio').isString().notEmpty(),
+    check('descripcion', 'La descripcion es obligatoria').isString().notEmpty(),
     validarCampos,
     validarExistenciaPublicacion,
     validarJWT,
@@ -32,7 +32,7 @@ router.put('/modificar_publicacion', [
     modificarPublicacion]);
 
 router.put('/change_like', [
-    check('pid', 'El ID de la publicacion es obligatorio').notEmpty(),
+    check('pid', 'El ID de la publicacion es obligatorio').isString().notEmpty(),
     validarExistenciaPublicacion,
     validarJWT,
     changeLike]);

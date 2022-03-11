@@ -9,7 +9,7 @@ router.post('/signin', [
     check('apellido', 'El apellido es obligatorio').isString().notEmpty(),
     check('email', 'El mail es obligatorio').isEmail().notEmpty(),
     check('contraseña', 'La contraseña es obligatoria').isLength({min:6}).notEmpty(),
-    check('alias', 'El alias es obligatorio'),
+    check('alias', 'El alias es obligatorio').notEmpty(),
     validarCampos,
     crearUsuario]);
 
