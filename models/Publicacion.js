@@ -28,8 +28,8 @@ const PublicacionSchema = Schema({
 });
 
 PublicacionSchema.methods.toJSON = function() {
-    const {__v, _id, ...resto} = this.toObject();
-    resto.pid = _id;
+    const {__v, ...resto} = this.toObject();
+    resto.pid = resto._id;
     return resto;
 };
 

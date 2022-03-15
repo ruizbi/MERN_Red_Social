@@ -28,14 +28,6 @@ const crearComentario = async (req = request, res = response) => {
 const borrarComentario = async (req = request, res = response) => {
     const {comentario} = req;
 
-    // const {usuario} = req;
-    // const {cid} = req.body;
-    // const comentario = await ComentarioSchema.findOne({_id:cid});
-    // if(!comentario)
-    //     return res.status(401).send({msg:'El comentario no se encuentra disponible'});
-    // if(usuario._id != comentario.uid)
-    //     return res.status(401).send({msg:'No se puede realizar dicha acción'});
-
     const publicacion = await PublicacionSchema.findOne({_id:comentario.pid});
     if(!publicacion)
         return res.status(401).send({msg:'La publicacion no se encuentra disponible'});
@@ -43,7 +35,7 @@ const borrarComentario = async (req = request, res = response) => {
     await PublicacionSchema.updateOne(publicacion, {$pull:{comentarios:comentario._id}});
     
     ComentarioSchema
-        .deleteOne({_id:cid})
+        .deleteOne(comentario)
         .then(data => res.status(200).send({msg:'Se borro el comentario con exito', data}))
         .catch(error => res.status(500).send({msg:'No se pudo borrar el comentario', data:error}));
 };
@@ -51,34 +43,18 @@ const borrarComentario = async (req = request, res = response) => {
 const changeLike_Comentario = async (req = request, res = response) => {
     const {comentario, usuario} = req;
 
-    // const {usuario} = req;
-    // const {cid} = req.body;
-    // const comentario = await ComentarioSchema.findOne({_id:cid});
-    // if(!comentario)
-    //     return res.status(400).send({msg:'El comentario no se encuentra disponible'});
-    // if(usuario._id != comentario.uid)
-    //     return res.status(401).send({msg:'No se puede realizar dicha acción'});
-
     if(comentario.likes.includes(usuario._id)){
         await ComentarioSchema.updateOne(comentario, {$pull:{likes:usuario._id}});
         return res.status(200).send({msg:'Se quitó el like del comentario', data:comentario});
     }
 
     await ComentarioSchema.updateOne(comentario, {$push:{likes:usuario._id}});
-    res.status(200).send({msg:'Se agrego el like al comentario', data:comentario});
+    res.status(200).send({msg:'Se agrego el like al comentario'});
 };
 
 const modificarComentario = async (req = request, res = response) => {
     const {comentario} = req;
     const {message} = req.body;
-
-    // const {usuario} = req;
-    // const {message, cid} = req.body;
-    // const comentario = await ComentarioSchema.findOne({_id:cid});
-    // if(!comentario)
-    //     return res.status(400).send({msg:'El comentario no se encuentra disponible'});
-    // if(usuario._id != comentario.uid)
-    //     return res.status(401).send({msg:'No se puede realizar dicha acción'});
 
     ComentarioSchema
         .updateOne(comentario, {message})

@@ -5,13 +5,13 @@ const bcryptjs = require('bcryptjs');
 const generarJWT = require('../helpers/generarJWT');
 
 const crearUsuario = async (req = request, res = response) => {
-    const {nombre, apellido, email, contraseña, alias} = req.body;
+    const {nombre, apellido, email, contraseña, imagen, alias} = req.body;
     let validar_usuario = await UsuarioSchema.findOne({$or:[{email},{alias}]});
     
     if(validar_usuario)
         return res.status(400).send({data:{}, msg:'El usuario/alias ya existe'});
     
-    let usuario = new UsuarioSchema({nombre, apellido, email, contraseña, alias});
+    let usuario = new UsuarioSchema({nombre, apellido, email, contraseña, imagen, alias});
     let salt = bcryptjs.genSaltSync();
     usuario.contraseña = bcryptjs.hashSync(contraseña, salt);
     
@@ -59,12 +59,6 @@ const desactivarUsuario = async (req = request, res = response) => {
 const followUser = async (req = request, res = response) => {
     const {usuario, user_friend} = req;
 
-    // const {usuario} = req;
-    // const {identificacion} = req.body;
-    // let user_friend = await UsuarioSchema.findOne({$or:[{email:identificacion},{alias:identificacion}]});
-    // if(!user_friend || !user_friend.activo)
-    //     return res.status(404).send({data:{}, msg:'El email/alias es incorrecto'});
-
     if(usuario.seguidos.includes(user_friend._id))
         return res.status(400).send({data:{}, msg:'El usuario ya está en la lista de seguidos'});
 
@@ -77,12 +71,6 @@ const followUser = async (req = request, res = response) => {
 const unfollowUser = async (req = request, res = response) => {
     const {usuario, user_friend} = req;
 
-    // const {usuario} = req;
-    // const {identificacion} = req.body;
-    // let user_friend = await UsuarioSchema.findOne({$or:[{email:identificacion},{alias:identificacion}]});
-    // if(!user_friend || !user_friend.activo)
-    //     return res.status(404).send({data:{}, msg:'El email/alias es incorrecto'});
-    
     if(!(usuario.seguidos.includes(user_friend._id)))
         return res.status(400).send({data:{}, msg:'El usuario no está en la lista de seguidos'});
 
@@ -95,15 +83,7 @@ const unfollowUser = async (req = request, res = response) => {
 const cargarUsuario = async (req = request, res = response) => {
     let {search_user} = req;
 
-    // let {usuario} = req;
-    // let {alias_param} = req.params;
-    // let search_user = await UsuarioSchema.findOne({alias:alias_param});
-    // if(!search_user)
-    //     return res.status(404).send({data:{}, msg:'El alias es incorrecto'});
-    // if(search_user.cuentaPrivada && !search_user.seguidos.includes(usuario._id))
-    //     return res.status(400).send({data:{}, msg:'El alias es privado'});
-
-    let {nombre, apellido, alias, imagenPerfil} = search_user;
+    let {nombre, apellido, alias, imagen, uid} = search_user;
     let count_seguidos = search_user.seguidos.length;
     let count_seguidores = search_user.seguidores.length;
 
@@ -111,32 +91,24 @@ const cargarUsuario = async (req = request, res = response) => {
 
     let publicaciones_resumidas = publicaciones.map(({imagen, descripcion, likes, comentarios, fecha, pid}) => ({imagen, descripcion, fecha, pid, count_likes:likes.length, count_comentarios:comentarios.length}));
 
-    res.status(200).send({msg:'Se ingresa al inicio del alias solicitado', data:{usuario:{nombre, apellido, alias, imagenPerfil, count_seguidos, count_seguidores}, publicaciones:publicaciones_resumidas}});
+    res.status(200).send({msg:'Se ingresa al inicio del alias solicitado', data:{usuario:{nombre, apellido, alias, imagen, count_seguidos, count_seguidores}, publicaciones:publicaciones_resumidas}});
 };
 
 const cargarContactos = async (req = request, res = response) => {
     let {search_user} = req;
     let {type_f} = req.params;
 
-    // let {usuario} = req;
-    // let {alias_param, type_f} = req.params;
-    // let search_user = await UsuarioSchema.findOne({alias:alias_param});
-    // if(!search_user)
-    //     return res.status(404).send({data:{}, msg:'El alias es incorrecto'}); 
-    // if(search_user.cuentaPrivada && !search_user.seguidos.includes(usuario._id))
-    //     return res.status(400).send({data:{}, msg:'El alias es privado'});
-
     if(type_f === "seguidos") {
         const resumen_seguidos = await Promise.all(search_user.seguidos.map(async function(_id) {
-            let {nombre, apellido, alias, imagenPerfil} = await UsuarioSchema.findOne({_id});
-            return {nombre, apellido, alias, imagenPerfil};
+            let {nombre, apellido, alias, imagen} = await UsuarioSchema.findOne({_id});
+            return {nombre, apellido, alias, imagen};
         }));
         return res.status(200).send({msg:'Lista de seguidos otorgada', data:resumen_seguidos});
     }
     else if(type_f === "seguidores") {
         const resumen_seguidores = await Promise.all(search_user.seguidores.map(async function(_id) {
-            let {nombre, apellido, alias, imagenPerfil} = await UsuarioSchema.findOne({_id});
-            return {nombre, apellido, alias, imagenPerfil};
+            let {nombre, apellido, alias, imagen} = await UsuarioSchema.findOne({_id});
+            return {nombre, apellido, alias, imagen};
         }));
         return res.status(200).send({msg:'Lista de seguidores otorgada', data:resumen_seguidores});
     }
@@ -155,13 +127,16 @@ const cambiarEstadoPrivacidad = (req = request, res = response) => {
 
 const cargarInicio = async (req = request, res = response) => {
     const {usuario} = req;
+
     const lista_publicaciones = await Promise.all(usuario.seguidos.map(async function(_id){
-        let {nombre, apellido, alias, imagenPerfil} = await UsuarioSchema.findById({_id});
+        let {nombre, apellido, alias, imagen:imagen_perfil} = await UsuarioSchema.findById({_id});
         let publicaciones = await PublicacionSchema.find({uid:_id});
-        let publicaciones_resumidas = publicaciones.map(({imagen, descripcion, likes, comentarios, fecha, pid}) => ({usuario:{nombre, apellido, alias, imagenPerfil}, publicacion:{imagen, descripcion, fecha, pid, count_likes:likes.length, count_comentarios:comentarios.length}}));
-        return {publicaciones:publicaciones_resumidas};
+        let publicaciones_resumidas = publicaciones.map(({imagen, descripcion, likes, comentarios, fecha, pid}) =>
+            ({usuario:{nombre, apellido, alias, imagen:imagen_perfil}, publicacion:{imagen, descripcion, fecha, pid, count_likes:likes.length, count_comentarios:comentarios.length}}));
+        return publicaciones_resumidas;
     }));
-    res.status(200).send({data:{publicaciones:lista_publicaciones, usuario:{nombre, apellido, alias, imagenPerfil}}, msg:'Inicio cargado con éxito'});
+
+    res.status(200).send({data:{publicaciones:lista_publicaciones, usuario:{nombre:usuario.nombre, apellido:usuario.apellido, alias:usuario.alias, imagen:usuario.imagen}}, msg:'Inicio cargado con éxito'});
 };
 
 module.exports = {

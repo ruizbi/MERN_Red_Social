@@ -13,6 +13,10 @@ const UsuarioSchema = Schema({
         type: Boolean,
         default: false
     },
+    imagen: {
+        type: String,
+        default: "not_found.jpeg"
+    },
     email: {
         type: String,
         required: [true, 'El correo es obligatorio'],
@@ -42,8 +46,8 @@ const UsuarioSchema = Schema({
 });
 
 UsuarioSchema.methods.toJSON = function() {
-    const {__v, _id, contraseña, ...resto} = this.toObject();
-    resto.uid = _id;
+    const {__v, contraseña, ...resto} = this.toObject();
+    resto.uid = resto._id;
     return resto;
 }
 

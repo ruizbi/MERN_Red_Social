@@ -24,8 +24,8 @@ const ComentarioSchema = Schema({
 });
 
 ComentarioSchema.methods.toJSON = function() {
-    const {__v, _id, ...resto} = this.toObject();
-    resto.cid = _id;
+    const {__v, ...resto} = this.toObject();
+    resto.cid = resto._id;
     return resto;
 };
 

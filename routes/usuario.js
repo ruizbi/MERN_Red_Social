@@ -3,9 +3,13 @@ const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validarCampos');
 const { validarIdentificador, validarDisponibilidad } = require('../middlewares/validarCredencial');
 const validarJWT = require('../middlewares/validarJWT');
-const { desactivarUsuario, followUser, unfollowUser, cargarUsuario, cargarContactos, cambiarEstadoPrivacidad } = require('../services/usuario');
+const { desactivarUsuario, followUser, unfollowUser, cargarUsuario, cargarContactos, cambiarEstadoPrivacidad, cargarInicio } = require('../services/usuario');
 const router = express.Router();
 
+router.get('/home', [
+    validarJWT,
+    cargarInicio]);
+    
 router.put('/desactivar_usuario', [
     validarJWT,
     desactivarUsuario]);

@@ -14,7 +14,7 @@ router.post('/crear_publicacion', [
     crearPublicacion]);
 
 router.delete('/borrar_publicacion', [
-    check('pid', 'El ID de la publicacion es obligatorio').isString().notEmpty(),
+    check('pid', 'El ID de la publicacion es obligatorio').notEmpty(),
     validarCampos,
     validarExistenciaPublicacion,
     validarJWT,

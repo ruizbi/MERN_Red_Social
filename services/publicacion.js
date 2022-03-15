@@ -5,6 +5,7 @@ const UsuarioSchema = require('../models/Usuario');
 
 const crearPublicacion = (req = request, res = response) => {
     const {usuario} = req;
+    console.log(usuario);
     const {imagen, descripcion} = req.body;
     const publicacion = PublicacionSchema({imagen, descripcion, uid:usuario._id});
     publicacion
@@ -16,23 +17,15 @@ const crearPublicacion = (req = request, res = response) => {
 const borrarPublicacion = async (req = request, res = response) => {
     const {publicacion} = req;
 
-    // const {usuario} = req;
-    // const {pid} = req.body;
-    // let publicacion = await PublicacionSchema.findById({_id:pid});
-    // if(!publicacion)
-    //     return res.status(404).send({msg:'La publicación no existe'});
-
-    // if(usuario._id != publicacion.uid)
-    //     return res.status(400).send({msg:'Error al querer borrar publicacion'});
-
     const comentarios = publicacion.comentarios;
 
-    await Promise.all(comentarios.forEach( async function(comentario) {
+    if(comentarios.length > 0)
+        await Promise.all(comentarios.forEach( async function(comentario) {
         await ComentarioSchema.deleteOne({_id:comentario._id});
     }));
 
     PublicacionSchema
-        .deleteOne({pid:publicacion.pid})
+        .deleteOne(publicacion)
         .then((data) => res.status(200).send({msg:'Publicacion borrada con éxito', data}))
         .catch((error) => res.status(400).send({msg:'Error al querer borrar publicacion', data:error}));
 };
@@ -40,15 +33,6 @@ const borrarPublicacion = async (req = request, res = response) => {
 const modificarPublicacion = async (req = request, res = response) => {
     const {publicacion} = req;
     const {imagen, descripcion} = req.body;
-
-    // const {usuario} = req;
-    // const {pid, imagen, descripcion} = req.body;
-    // let publicacion = await PublicacionSchema.findById({_id:pid});
-    // if(!publicacion)
-    //     return res.status(404).send({msg:'La publicación no existe'});
-
-    // if(usuario._id != publicacion.uid)
-    //     return res.status(400).send({msg:'Error al querer modificar publicacion'});
 
     PublicacionSchema
         .updateOne(publicacion, {imagen, descripcion})
@@ -59,12 +43,6 @@ const modificarPublicacion = async (req = request, res = response) => {
 const changeLike = async (req = request, res = response) => {
     const {usuario, publicacion} = req;
 
-    // const {usuario} = req;
-    // const {pid} = req.body;
-    // let publicacion = await PublicacionSchema.findById({_id:pid});
-    // if(!publicacion)
-    //     return res.status(404).send({msg:'La publicación no existe'});
-
     const usuario_publicacion = await UsuarioSchema.findOne({_id:publicacion.uid});
     if(!usuario_publicacion.activo || !usuario_publicacion) 
         return res.status(401).send({msg:'La publicacion no se encuentra disponible - USER'});
@@ -74,11 +52,11 @@ const changeLike = async (req = request, res = response) => {
 
     if(publicacion.likes.includes(usuario._id)) {
         await publicacion.updateOne({$pull:{likes:usuario._id}});
-        return res.status(200).send({msg:'Se quita el like a la publicacion', data:publicacion});
+        return res.status(200).send({msg:'Se quita el like a la publicacion'});
     }
 
     await publicacion.updateOne({$push:{likes:usuario._id}});
-    res.status(200).send({msg:'Se suma el like a la publicacion', data:publicacion});
+    res.status(200).send({msg:'Se suma el like a la publicacion'});
 };
 
 const buscarPublicacion = async (req = request, res = response) => {
@@ -101,11 +79,12 @@ const buscarPublicacion = async (req = request, res = response) => {
 
     let lista_comentarios = await Promise.all(comentarios.map(async function(comentario_id){
         let {uid, message, fecha, likes} = await ComentarioSchema.findOne({_id:comentario_id});
-        let {nombre, apellido, alias, imagenPerfil} = await UsuarioSchema.findOne({_id:uid});
-        return {usuario:{nombre, apellido, alias, imagenPerfil},comentario:{message, fecha, likes}};
+        let {nombre, apellido, alias, imagen} = await UsuarioSchema.findOne({_id:uid});
+        return {usuario:{nombre, apellido, alias, imagen},comentario:{message, fecha, likes}};
     }));
 
-    res.status(200).send({msg:'La busqueda fue exitosa', data:{usuario:usuario_publicacion, publicacion:{imagen:publicacion.imagen, descripcion:publicacion.descripcion, fecha:publicacion.fecha, pid:publicacion.pid, count_likes, comentarios:lista_comentarios}}});
+    const {nombre, alias, imagen, apellido} = usuario_publicacion;
+    res.status(200).send({msg:'La busqueda fue exitosa', data:{usuario:{nombre, alias, imagen, apellido}, publicacion:{imagen:publicacion.imagen, descripcion:publicacion.descripcion, fecha:publicacion.fecha, pid:publicacion.pid, count_likes, comentarios:lista_comentarios}}});
 }
 
 module.exports = {

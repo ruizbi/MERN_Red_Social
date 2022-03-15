@@ -10,10 +10,10 @@ const authRoute = require('./routes/auth');
 
 app.use(express.json());
 
+app.use('/auth', authRoute);
 app.use('/usuario', usuarioRoute);
 app.use('/p', publicacionRoute);
 app.use('/comentario', comentarioRoute);
-app.use('/auth', authRoute);
 
 dbConnection();
 
